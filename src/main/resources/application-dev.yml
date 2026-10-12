@@ -4,17 +4,30 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/synpharm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
-    password: Fth419516.
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:synpharm}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:Fth419516.}
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 #      password:
       database: 0
       timeout: 3000ms
+
+  # RabbitMQ（批量任务消息队列；Docker dev compose 通过环境变量注入服务名）
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:synpharm}
+    password: ${RABBITMQ_PASSWORD:}
+
+  # 文件上传限制
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 
   # 邮件配置（QQ邮箱发送验证码）
   # 部署时通过环境变量 QQ_EMAIL 和 QQ_EMAIL_AUTH_CODE 注入真实值
@@ -53,6 +66,19 @@ jwt:
 server:
   port: 8080
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    # 邮箱为可选功能，未配置时不影响健康状态
+    mail:
+      enabled: false
+
 knife4j:
   enable: true
   setting:
@@ -62,6 +88,18 @@ logging:
   level:
     com.synpharm: debug
     com.baomidou.mybatisplus: info
+
+# 文件存储目录
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+  result-dir: ${FILE_RESULT_DIR:./results}
+
+# FastAPI 算法引擎（Docker dev compose 通过环境变量注入服务名）
+fastapi:
+  base-url: ${FASTAPI_URL:http://localhost:8000}
+  api-key: ${FASTAPI_API_KEY:}
+  timeout-single: ${FASTAPI_TIMEOUT_SINGLE:30000}
+  timeout-batch: ${FASTAPI_TIMEOUT_BATCH:60000}
 
 # 应用配置
 app:
